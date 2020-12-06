@@ -1,10 +1,8 @@
 local data = {}
 
 -- Read data
-local line = io.read("l")
-while line do
+for line in io.lines() do
 	table.insert(data, tonumber(line))
-	line = io.read("l")
 end
 
 function reduce(fn, acc, ...)
