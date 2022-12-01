@@ -1,0 +1,22 @@
+Stream = import "Stream"
+IO = import "Io"
+
+elves = [0]
+
+for line in IO.stdin.splitAt("\n", true): {
+	str = line.toString()
+	if str != "": {
+		elves.(elves.length) += Number.parse str
+	} else {
+		elves.append 0
+	}
+}
+
+f1() => Stream.of(elves).max()
+
+f2() => Stream.of(elves)
+	.sorted((a, b) => a > b)
+	.take(3)
+	.reduce((a, b) => a + b, nil)
+
+yield f2()
