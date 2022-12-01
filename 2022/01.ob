@@ -5,7 +5,7 @@ elves = [0]
 
 for line in IO.stdin.splitAt("\n", true).map(x => x.toString()): {
 	if line != "": {
-		elves.(elves.length) += Number.parse line
+		elves.(#elves) += Number.parse line
 	} else {
 		elves.append 0
 	}
