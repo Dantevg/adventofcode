@@ -17,7 +17,7 @@ totalScore1 [input, output] => output + outcomeScore(input, output)
 totalScore2 [input, output] => totalScore1 [input, (input + output - 3) % 3 + 1]
 
 score = IO.stdin.splitAt("\n")
-	.map(line => totalScore2 [...line.splitAt(" ").map(x => x.toString()).map(x => moveToNum.(x))])
+	.map(line => totalScore2 [...line.splitAt(" ").map(x => x.toString()).mapIndex(moveToNum)])
 	.reduce((a, b) => a + b)
 
 yield score
