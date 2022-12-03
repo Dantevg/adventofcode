@@ -1,32 +1,20 @@
-Stream = import "Stream"
 IO = import "Io"
-Range = import "Range"
 
 charToPrio(x) =>
 	if x.charCode() < "a".charCode(): x.charCode() - "A".charCode() + 27
 	else x.charCode() - "a".charCode() + 1
 
-findShared(rucksack) => {
-	const part1, part2 = {}, {}
+findShared1(rucksack) => {
 	const half = #rucksack * 0.5
-	for i in Range(1, half): {
-		part1.(rucksack.(i)) = true
-		part2.(rucksack.(half+i)) = true
-	}
-	for key in part1.keys(): if part2.(key): return key
-}
-
-List.toKeySet() => {
-	const keys = {}
-	for x in this: keys.(x) = true
-	return keys
+	const part1, part2 = rucksack.sub(1, half), rucksack.sub(half+1)
+	for item in part1: if part2.contains(item): return item
 }
 
 findShared2 [r1, r2, r3] =>
-	for key in r1.toKeySet().keys(): if r2.toKeySet().(key) and r3.toKeySet().(key): return key
+	for item in r1: if r2.contains(item) and r3.contains(item): return item
 
 f1() => IO.stdin.splitAt("\n")
-	.map(line => findShared [...line])
+	.map(line => findShared1 [...line])
 
 f2() => IO.stdin.splitAt("\n")
 	.groupBySize(3)
