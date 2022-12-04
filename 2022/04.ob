@@ -1,0 +1,14 @@
+IO = import "Io"
+Range = import "Range"
+
+readAssignment(ass) => Range(...ass.splitAt("-").map(x => x.toString()).map(Number.parse))
+readAssignmentPair(line) => [...line.splitAt(",").map(readAssignment)]
+
+Range.overlaps(that) => this.contains(that.from) or this.contains(that.to)
+
+input = IO.stdin.splitAt("\n").map(readAssignmentPair)
+
+f1() => input.filter([a, b] => a.contains(b) or b.contains(a)).count()
+f2() => input.filter([a, b] => a.overlaps(b) or b.overlaps(a)).count()
+
+yield f2()
