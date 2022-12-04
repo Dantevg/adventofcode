@@ -22,4 +22,4 @@ f2() => IO.stdin.splitAt("\n")
 
 yield f2()
 	.map(charToPrio)
-	.reduce((a, b) => a + b)
+	.sum()
