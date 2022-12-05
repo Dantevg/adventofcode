@@ -1,0 +1,44 @@
+IO = import "Io"
+Stream = import "Stream"
+Range = import "Range"
+
+parseLine line => [...Stream.of(line).groupBySize(4).map(crate => [...crate].2)]
+
+parseMove move => [...Stream.of(move)
+	.splitAt(" ")
+	.map(x => x.toString())
+	.groupBySize(2)
+	.map(x => Number.parse(x.drop(1).toString()))]
+
+parseStacks input => {
+	const stacks = []
+	for i in Range(#input-1, 1).by(-1): {
+		for elem, j in input.(i): {
+			if stacks.(j) == nil: stacks.(j) = []
+			if elem != " ": stacks.(j).append(elem)
+		}
+	}
+	return stacks
+}
+
+performMove1([n, from, to], stacks) =>
+	for i in Range(1, n): stacks.(to).append(stacks.(from).pop())
+
+performMove2([n, from, to], stacks) => {
+	stacks.(to) ++= stacks.(from).sub(#stacks.(from) - n + 1)
+	stacks.(from) = stacks.(from).sub(1, #stacks.(from) - n)
+}
+
+input = IO.stdin.splitAt("\n", true)
+	.map(x => x.toString())
+	.group(x => #x != 0)
+
+stacks = parseStacks [...input.read().map(parseLine)]
+
+input.read()
+	.map(parseMove)
+	.forAll(move => performMove2(move, stacks))
+
+tops = Stream.of(stacks).map(stack => stack.(#stack))
+
+yield tops.toString()
