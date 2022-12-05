@@ -1,17 +1,16 @@
 IO = import "Io"
-Stream = import "Stream"
 Range = import "Range"
 
-parseLine line => [...Stream.of(line).groupBySize(4).map(crate => [...crate].2)]
+parseLine line => [...line.stream().groupBySize(4).map(crate => [...crate].2)]
 
-parseMove move => [...Stream.of(move)
+parseMove move => [...move.stream()
 	.splitAt(" ")
 	.map(x => x.toString())
 	.groupBySize(2)
 	.map(x => Number.parse(x.drop(1).toString()))]
 
-parseStacks input => [...Stream.of(input.transpose())
-	.map(x => [...Stream.of(x.reverse()).drop(1).filter(y => y != " ")])]
+parseStacks input => [...input.transpose().stream()
+	.map(x => [...x.reverse().stream().drop(1).filter(y => y != " ")])]
 
 performMove1([n, from, to], stacks) =>
 	for i in Range(1, n): stacks.(to).append(stacks.(from).pop())
@@ -31,6 +30,6 @@ input.read()
 	.map(parseMove)
 	.forAll(move => performMove2(move, stacks))
 
-tops = Stream.of(stacks).map(stack => stack.(#stack))
+tops = stacks.stream().map(stack => stack.(#stack))
 
 yield tops.toString()
