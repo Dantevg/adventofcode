@@ -1,0 +1,6 @@
+IO = import "Io"
+
+yield IO.stdin.group((x, last, buffer) =>
+		buffer.sub(#buffer-13).stream().distinct().count() < 14)
+	.read()
+	.count()
