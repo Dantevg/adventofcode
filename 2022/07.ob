@@ -1,0 +1,63 @@
+IO = import "Io"
+
+tree = {}
+currentPath = []
+
+treeAtPath(path) => {
+	var newtree = tree
+	for part in path: newtree = newtree.(part)
+	return newtree
+}
+
+parseCommand line => {
+	[command, newpath] = [...line.splitAt(" ").drop(1).map(x => x.toString())]
+	if command != "cd": return nil
+	if newpath == "/": currentPath = []
+	else if newpath == "..": currentPath = currentPath.sub(1, #currentPath-1)
+	else currentPath.append(newpath)
+}
+
+parseOutput line => {
+	[typeOrSize, name] = [...line.splitAt(" ").map(x => x.toString())]
+	if treeAtPath(currentPath) == nil: print(currentPath, tree)
+	treeAtPath(currentPath).(name) = if typeOrSize == "dir": {} else Number.parse(typeOrSize)
+}
+
+for line in IO.stdin.splitAt("\n").map(x => x.toString()): {
+	if line.1 == "$": parseCommand(line.stream())
+	else parseOutput(line.stream())
+}
+
+var smallSize = 0
+
+calcDirSize(tree) => {
+	if tree.size: return tree.size
+	var size = 0
+	for key in tree.keys(): {
+		if tree.(key).is Number: size += tree.(key)
+		else size += calcDirSize(tree.(key))
+	}
+	if size < 100000: smallSize += size
+	tree.size = size
+	return size
+}
+
+
+calcDirSize(tree)
+minSize = 30000000 - (70000000 - tree.size)
+smallestToRemove = tree.size
+
+calcSmallestToRemove(tree) => {
+	for key in tree.keys(): {
+		if tree.(key).is Number: {
+			if tree.size < smallestToRemove and tree.size > minSize:
+				smallestToRemove = tree.size
+		}
+		else calcSmallestToRemove(tree.(key))
+	}
+}
+
+f1() => calcDirSize(tree)
+f2() => calcSmallestToRemove(tree)
+
+yield f2()
