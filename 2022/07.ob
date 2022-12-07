@@ -19,7 +19,6 @@ parseCommand line => {
 
 parseOutput line => {
 	[typeOrSize, name] = [...line.splitAt(" ").map(x => x.toString())]
-	if treeAtPath(currentPath) == nil: print(currentPath, tree)
 	treeAtPath(currentPath).(name) = if typeOrSize == "dir": {} else Number.parse(typeOrSize)
 }
 
@@ -42,22 +41,22 @@ calcDirSize(tree) => {
 	return size
 }
 
-
-calcDirSize(tree)
-minSize = 30000000 - (70000000 - tree.size)
-smallestToRemove = tree.size
-
-calcSmallestToRemove(tree) => {
+calcSmallestToRemove(tree, smallest, minSize) => {
 	for key in tree.keys(): {
 		if tree.(key).is Number: {
-			if tree.size < smallestToRemove and tree.size > minSize:
-				smallestToRemove = tree.size
+			if tree.size < smallest and tree.size > minSize: smallest = tree.size
 		}
-		else calcSmallestToRemove(tree.(key))
+		else smallest = calcSmallestToRemove(tree.(key), smallest, minSize)
 	}
+	return smallest
 }
 
-f1() => calcDirSize(tree)
-f2() => calcSmallestToRemove(tree)
+calcDirSize(tree)
+
+f1() => smallSize
+f2() => {
+	const minSize = 30000000 - (70000000 - tree.size)
+	return calcSmallestToRemove(tree, tree.size, minSize)
+}
 
 yield f2()
