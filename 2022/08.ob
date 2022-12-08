@@ -1,0 +1,30 @@
+IO = import "Io"
+
+grid = [...IO.stdin.splitAt("\n").map(line => [...line.map(Number.parse)])]
+
+subCol(grid, col) => [...grid.stream().map(row => row.(col))]
+isVisibleIn(tree, line) => line.stream().filter(other => other > tree - 1).count() == 0
+
+isVisible(x, y) =>
+	isVisibleIn(grid.(y).(x), grid.(y).sub(1, x-1))
+	or isVisibleIn(grid.(y).(x), grid.(y).sub(x+1))
+	or isVisibleIn(grid.(y).(x), subCol(grid, x).sub(1, y-1))
+	or isVisibleIn(grid.(y).(x), subCol(grid, x).sub(y+1))
+
+viewDistance(tree, line) => (for other, i in line: if other > tree-1: return i) or #line
+
+scenicScore(x, y) =>
+	viewDistance(grid.(y).(x), grid.(y).sub(1, x-1).reverse())
+	* viewDistance(grid.(y).(x), grid.(y).sub(x+1))
+	* viewDistance(grid.(y).(x), subCol(grid, x).sub(1, y-1).reverse())
+	* viewDistance(grid.(y).(x), subCol(grid, x).sub(y+1))
+
+f1() => grid.stream()
+	.map((line, y) => line.stream().filter((_, x) => isVisible(x, y)).count())
+	.sum()
+
+f2() => grid.stream()
+	.map((line, y) => line.stream().map((_, x) => scenicScore(x, y)).max())
+	.max()
+
+yield f2()
