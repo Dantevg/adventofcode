@@ -1,0 +1,36 @@
+IO = import "Io"
+Range = import "Range"
+
+vec(x, y) => { const x, y = x, y }
+
+parseLine line => {
+	[dir, n] = [...line.splitAt(" ").map(x => x.toString())]
+	dir = { U = vec(0,1); D = vec(0,-1); L = vec(-1,0); R = vec(1,0) }.(dir)
+	n = Number.parse n
+}
+
+isTouching(a, b) => (a.x - b.x).abs() < 2 and (a.y - b.y).abs() < 2
+
+clamp1 x => Number.max(-1, Number.min(x, 1))
+
+moveTowards(head, tail) =>
+	vec(tail.x + clamp1(head.x - tail.x), tail.y + clamp1(head.y - tail.y))
+
+nextPos(head, tail) => if isTouching(head, tail): tail else moveTowards(head, tail)
+
+move(pos, dir) => {
+	pos.1 = vec(pos.1.x + dir.x, pos.1.y + dir.y)
+	for part, i in pos: if i > 1: pos.(i) = nextPos(pos.(i-1), pos.(i))
+}
+
+visited = {}
+pos = [vec(0,0), vec(0,0), vec(0,0), vec(0,0), vec(0,0), vec(0,0), vec(0,0), vec(0,0), vec(0,0), vec(0,0)]
+
+for { dir; n } in IO.stdin.splitAt("\n").map(parseLine): {
+	for i in Range(1, n): {
+		move(pos, dir)
+		visited.(""++pos.(#pos).x++" "++pos.(#pos).y) = true
+	}
+}
+
+yield #visited.keys()
