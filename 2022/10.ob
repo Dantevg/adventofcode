@@ -1,0 +1,23 @@
+IO = import "Io"
+
+runInstruction line => {
+	[cmd, arg] = [...line.splitAt(" ").map(x => x.toString())]
+	return if cmd == "addx": [0, Number.parse(arg)].stream() else [0].stream()
+}
+
+input = IO.stdin.splitAt("\n")
+	.map(runInstruction).flat()
+	.reduce((acc, x) => acc ++ [acc.(#acc) + x], [1]).stream()
+
+f1() => input
+	.map((x, i) => x * i)
+	.filter((x, i) => (i - 20) % 40 == 0)
+	.sum()
+
+f2() => input
+	.map((x, i) => if ((i-1) % 40 - x).abs() < 2: "#" else ".")
+	.groupBySize(40)
+	.map(x => x.toString())
+	.forAll(print)
+
+yield f2()
