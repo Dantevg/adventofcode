@@ -1,0 +1,56 @@
+IO = import "Io"
+
+parseItems line => [...line
+	.splitAt ":"
+	.drop 1.flat()
+	.splitAt ","
+	.map(x => Number.parse(x.toString()))]
+
+parseOperation line => {
+	[op, num] = [...line
+		.splitAt "="
+		.drop 1.flat()
+		.splitAt " "
+		.drop 1
+		.map(x => x.toString())]
+	num = Number.parse(num)
+	return x => if op == "*": x * (num or x) else x + (num or x)
+}
+
+parseTest line => {
+	divBy = Number.parse(line.splitAt " ".drop 3.flat().toString())
+	return x => x % divBy == 0
+}
+
+parseIf line => Number.parse(line.splitAt " ".drop 5.flat().toString())
+
+parseMonkey lines => {
+	lines.read()
+	items = parseItems(lines.read())
+	operation = parseOperation(lines.read())
+	test = parseTest(lines.read())
+	cond = {}
+	cond.(true), cond.(false) = parseIf(lines.read()), parseIf(lines.read())
+	nInspected = 0
+}
+
+Monkeys = {
+	turn(monkey) => {
+		monkeys = this
+		monkey.items.stream().map(item => monkey.operation(item) // 3)
+			.forEach(() => { monkey.nInspected += 1 })
+			.forAll(item => {
+				index = monkey.cond.(monkey.test(item)) + 1
+				monkeys.(index).items.append(item)
+			})
+		monkey.items = []
+	}
+
+	round() => for monkey in this: this.turn(monkey)
+}
+
+monkeys = Monkeys.clone [...IO.stdin.splitAt("\n").groupBySize(6).map(parseMonkey)]
+for i in 1..20: monkeys.round()
+
+yield [...monkeys.stream().map(m => m.nInspected)]
+	.sorted((a, b) => a > b).stream().take(2).reduce((acc, x) => acc * x)
