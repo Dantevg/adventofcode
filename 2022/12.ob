@@ -1,0 +1,58 @@
+IO = import "Io"
+Stream = import "Stream"
+
+Node(height, x, y) => {
+	const height, x, y = height, x, y
+	var visited, distance = false, Number.INF
+}
+
+Board = {
+	canGo(from, to) => to != nil and from.height <= to.height + 1
+
+	neighbours(node) => [
+		if this.canGo(node, this.(node.y-1).(node.x)): this.(node.y-1).(node.x)
+		if this.canGo(node, this.(node.y).(node.x+1)): this.(node.y).(node.x+1)
+		if this.canGo(node, this.(node.y+1).(node.x)): this.(node.y+1).(node.x)
+		if this.canGo(node, this.(node.y).(node.x-1)): this.(node.y).(node.x-1)
+	]
+}
+
+var start, end
+
+toNode(char, x, y) =>
+	if char == "S": { start = Node(0, x, y); return start }
+	else if char == "E": { end = Node(25, x, y); return end }
+	else Node(char.charCode() - "a".charCode(), x, y)
+
+getMinDist(frontier) => {
+	var min
+	for node in frontier.keys(): if min == nil or node.distance < min.distance: min = node
+	return min
+}
+
+dijkstra(board, start, end) => {
+	var nVisited = 0
+	const frontier = { .(end) = true }
+	end.distance = 0
+	while #frontier.keys() > 0: {
+		if nVisited % 100 == 0: print(nVisited, #frontier.keys())
+		const node = getMinDist(frontier)
+		frontier.(node) = nil
+		if node.distance == Number.INF: return
+		const neigh = board.neighbours(node).stream().filter(n => !n.visited)
+		for n in neigh: {
+			frontier.(n) = true
+			n.distance = Number.min(n.distance, node.distance + 1)
+		}
+		node.visited = true
+		nVisited += 1
+		if node.height == 0: return node
+	}
+}
+
+board = Board.clone(IO.stdin
+	.splitAt "\n"
+	.map((line, y) => line.map((char, x) => toNode(char, x, y)).toList())
+	.toList())
+
+yield dijkstra(board, start, end)
