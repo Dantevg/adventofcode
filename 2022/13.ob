@@ -4,15 +4,17 @@ parsePacket(line) => {
 	var [char, next] = line.read()
 	if char == "[": {
 		const list = []
-		while char != "]" and char != nil: {
-			const item = parsePacket(line)
-			if item != nil: list.append(item)
+		if next == "]": { line.read(); return list }
+		list.append(parsePacket(line))
+		[char, next] = line.read()
+		while char == ",": {
+			list.append(parsePacket(line))
 			[char, next] = line.read()
 		}
 		return list
-	} else if char != nil: {
+	} else if char != "]" and char != ",": {
 		if next == "," or next == "]": return Number.parse(char)
-		else return Number.parse(char ++ line.takeWhile(c => c.2 != "," and c.2 != "]", true).map(x => x.1).toString())
+		else return Number.parse(char ++ next ++ line.takeWhile(c => c.2 != "," and c.2 != "]").map(x => x.2).toString())
 	}
 	return nil
 }
@@ -29,11 +31,23 @@ compare(a, b) =>
 	else if a.is Number: compare([a], b)
 	else if b.is Number: compare(a, [b])
 
-yield IO.stdin
+input = IO.stdin
 	.splitAt "\n"
 	.map(line => line.windowed 2)
 	.map(parsePacket)
+
+f1() => input
 	.groupBySize 2
 	.map((x, i) => [x, i])
 	.filter([pair, i] => compare(...pair))
 	.reduce((acc, [_, i]) => acc + i, 0)
+
+dividers = [ [[2]], [[6]] ]
+
+f2() => (input ++ dividers.stream())
+	.sorted(compare)
+	.map((x, i) => [x, i])
+	.filter([x, i] => dividers.contains x)
+	.reduce((acc, [_, i]) => acc * i, 1)
+
+yield f2()
