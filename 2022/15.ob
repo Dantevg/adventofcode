@@ -1,0 +1,59 @@
+IO = import "Io"
+Range = import "Range"
+
+l1norm(a, b) => (a.x - b.x).abs() + (a.y - b.y).abs()
+
+closestSensor(sensors, pos) => sensors.stream()
+	.map(s => [s, l1norm(s.pos, pos)])
+	.reduce((acc, x) => if x.2 < acc.2: x else acc)
+
+Vec = {
+	"()" (x, y) => this.clone { const x, y = x, y }
+	toString() => "(" ++ this.x ++ ", " ++ this.y ++ ")"
+}
+
+Sensor = {
+	indicesAtLine y => {
+		const dist = this.dist - (y - this.pos.y).abs()
+		return if dist >= 0: (this.pos.x - dist)..(this.pos.x + dist) else {}
+	}
+}
+
+Range.overlaps(that) => this.contains(that.from) or this.contains(that.to)
+	or that.contains(this.from) or that.contains(this.to)
+Range.combineWith(that) => Number.min(this.from, that.from)..Number.max(this.to, that.to)
+Range.length() => this.to - this.from + 1
+
+appendRange(list, range) =>
+	list.stream().filter(r => !r.overlaps(range)).toList()
+	++ [list.stream()
+		.filter(r => r.overlaps(range))
+		.reduce((acc, r) => acc.combineWith r, range)]
+
+parseLocation loc => Vec(...loc.splitAt ",".map(x => x.drop(3).toString()).map(Number.parse))
+
+parseSensor line => Sensor.clone {
+	pos, beacon = ...line.splitAt ":"
+	pos = parseLocation(pos.drop(#"Sensor at"))
+	beacon = parseLocation(beacon.drop(#" closest beacon is at"))
+	dist = l1norm(pos, beacon)
+}
+
+sensors = [...IO.stdin.splitAt "\n".map parseSensor]
+
+f1() => {
+	const y = 2000000
+	const beacons = sensors.stream()
+		.filter(s => s.beacon.y == y)
+		.map(s => s.beacon.x)
+		.distinct().toList()
+	
+	return sensors.stream()
+		.map(s => s.indicesAtLine y)
+		.filter(r => r.is Range)
+		.reduce(appendRange, [])
+		.stream().map(r => r.length() - beacons.stream().filter(x => r.contains(x)).count())
+		.sum()
+}
+
+yield f1()
