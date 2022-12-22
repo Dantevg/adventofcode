@@ -1,0 +1,44 @@
+IO = import "Io"
+
+parseValve line => {
+	_valve, _tunnel = ...line.splitAt(";")
+	const name = _valve.splitAt(" ").drop(1).read().toString()
+	const rate = _valve.splitAt(" ").drop(2).read().splitAt("=").drop(1).read().toString() |> Number.parse
+	const tunnels = _tunnel.splitAt(",")
+		.map(x => x.toString())
+		.map(x => x.sub(#x-1))
+		.toBlock(x => (x, 1))
+	_valve, _tunnel = ()
+}
+
+valves = IO.stdin.splitAt("\n").map(parseValve).toBlock(x => (x.name, x))
+
+dist(from, to) => valves.(from).tunnels.(to) or Number.INF
+
+for k in valves.keys(): {
+	for i in valves.keys(): {
+		for j in valves.keys(): {
+			valves.(i).tunnels.(j) = Number.min(dist(i, j), dist(i, k) + dist(k, j))
+		}
+	}
+}
+
+valves = valves.keys().stream()
+	.filter(v => valves.(v).rate > 0 or v == "AA")
+	.toBlock(v => (v, valves.(v)))
+
+for v in valves.keys(): {
+	for t in valves.(v).tunnels.keys(): {
+		if valves.(t) == nil: valves.(v).tunnels.(t) = nil
+	}
+}
+
+search(valve, visited, time) =>
+	if time <= 0: 0
+	else if time == 1: valve.rate
+	else valve.rate * time + (valve.tunnels.keys().stream()
+		.filter(v => !visited.contains(v) and dist(valve.name, v) < time - 1)
+		.map(v => search(valves.(v), visited ++ [v], time - dist(valve.name, v) - 1))
+		.max() or 0)
+
+yield search(valves.AA, ["AA"], 30)
