@@ -33,12 +33,24 @@ for v in valves.keys(): {
 	}
 }
 
-search(valve, visited, time) =>
-	if time <= 0: 0
-	else if time == 1: valve.rate
-	else valve.rate * time + (valve.tunnels.keys().stream()
-		.filter(v => !visited.contains(v) and dist(valve.name, v) < time - 1)
-		.map(v => search(valves.(v), visited ++ [v], time - dist(valve.name, v) - 1))
-		.max() or 0)
+pairDist(from, to) => dist(from.1.name, to.1) + dist(from.2.name, to.2)
 
-yield search(valves.AA, ["AA"], 30)
+tunnelCombos(valve, visited, time) => {
+	t1 = valve.1.tunnels.keys().stream().filter(v => visited.(v) == nil and dist(valve.1.name, v) < time.1 - 1)
+	t2 = [...valve.2.tunnels.keys().stream().filter(v => visited.(v) == nil and dist(valve.2.name, v) < time.2 - 1)]
+	return t1.map((v1, i) => t2.stream().filter(v2 => v1 != v2).map(v2 => [v1, v2])).flat()
+}
+
+search(valve, visited, time) =>
+	if time.1 <= 0 and time.2 <= 0: 0
+	else if time.1 <= 0 and time.2 == 1: valve.2.rate
+	else if time.1 == 1 and time.2 <= 0: valve.1.rate
+	else valve.1.rate * time.1 + valve.2.rate * time.2
+		+ (tunnelCombos(valve, visited, time)
+			.map(v => search(
+				[valves.(v.1), valves.(v.2)],
+				visited.clone {.(v.1) = true; .(v.2) = true},
+				[time.1 - dist(valve.1.name, v.1) - 1, time.2 - dist(valve.2.name, v.2) - 1]))
+			.max() or 0)
+
+yield search([valves.AA, valves.AA], {AA = true}, [26, 26])
