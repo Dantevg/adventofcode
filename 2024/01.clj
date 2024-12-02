@@ -14,16 +14,16 @@
 (defn similarity-score [n in]
   (->> in (filter #{n}) (count) (* n)))
 
+(def in (parse-file (slurp *in*)))
+
 (defn f1 []
-  (let [in (parse-file (slurp *in*))
-        pairs (zip (map sort (zip in)))]
+  (let [pairs (zip (map sort (zip in)))]
     (->> pairs
          (map #(abs (apply - %1)))
          (apply +))))
 
 (defn f2 []
-  (let [in (parse-file (slurp *in*))
-        [l1 l2] (zip in)]
+  (let [[l1 l2] (zip in)]
     (->> l1
          (map #(similarity-score %1 l2))
          (apply +))))
