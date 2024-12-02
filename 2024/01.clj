@@ -4,7 +4,7 @@
 ;; does clojure seriously not have an identity function?
 (defn id [& x] x)
 
-;; also works as unzip (magic? maybe this should be called transpose)
+;; also works as unzip (lisp magic? maybe this should be called transpose)
 (defn zip [x]
   (apply map list x))
 
@@ -20,9 +20,20 @@
 (defn abs-diff [pair]
   (abs (- (first pair) (second pair))))
 
+(defn n-occurrences [of in]
+  (count (filter #{of} in)))
+
+(defn similarity-score [of in]
+  (* of (n-occurrences of in)))
+
 (defn f1 []
   (let [in (parse-file (slurp *in*))
         pairs (pair-numbers in)]
     (apply + (map abs-diff pairs))))
 
-(println (f1))
+(defn f2 []
+  (let [in (parse-file (slurp *in*))
+        [l1 l2] (zip in)]
+    (apply + (map #(similarity-score %1 l2) l1))))
+
+(println (f2))
