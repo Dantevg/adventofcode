@@ -1,1 +1,7 @@
 *.in
+
+# clojure zooi
+.calva
+.clj-kondo
+.joyride
+.lsp
